@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# Autor: Marcelo Magalhães
+#
+# Rejeita um commit enquanto houver arquivos fora da norma
+# Dê permissão de execução e coloque em .git/hooks
+
+RESET='\033[m'
+YELLOW='\033[1;33m'
+
+stop_message() {
+  echo -e "${YELLOW}COMMIT REJECTED${RESET}: norm error!"
+}
+
+check_norm_error () {
+  norminette "$1" | grep -q 'Error!' && stop_message
+}
+
+main() {
+  local filename
+  for file in $(git diff --cached --name-only); do
+    filename=$(basename "$file")
+    case "$filename" in
+      get_next_*.c | get_next_*.h)
+        check_norm_error "$file" && exit 1
+      ;;
+    esac
+  done
+  exit 0
+}
+
+main
