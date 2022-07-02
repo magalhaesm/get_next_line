@@ -6,26 +6,36 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:46:00 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/06/28 14:21:23 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/01 20:54:30 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-size_t	ft_strlen(const char *s)
+void	free_chunk(void *content)
 {
-	size_t	i;
+	t_chunk	*aux;
 
-	i = 0;
-	while (s[i])
-		i++;
-	return (i);
+	if (!content)
+		return ;
+	aux = content;
+	free(aux->text);
+	free(aux);
 }
 
-void	ft_lstdelone(t_list *lst, void (*del)(void *))
+int	sum_chunk_size(t_list *storage)
 {
-	del(lst->content);
-	free(lst);
+	t_chunk	*chunk;
+	int		length;
+
+	length = 0;
+	while (storage)
+	{
+		chunk = storage->content;
+		length += chunk->size;
+		storage = storage->next;
+	}
+	return (length);
 }
 
 t_list	*ft_lstnew(void *content)
@@ -40,16 +50,16 @@ t_list	*ft_lstnew(void *content)
 	return (newnode);
 }
 
-void	ft_lstadd_back(t_list **lst, t_list *newl)
+void	ft_lstclear(t_list **lst, void (*del)(void *))
 {
-	t_list	*node;
+	t_list	*tmp;
 
-	if (*lst == NULL)
-		*lst = newl;
-	else
+	while (*lst != NULL)
 	{
-		node = ft_lstlast(*lst);
-		node->next = newl;
+		tmp = *lst;
+		*lst = (*lst)->next;
+		del(tmp->content);
+		free(tmp);
 	}
 }
 

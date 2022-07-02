@@ -6,94 +6,134 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:42:38 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/06/28 14:49:42 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/02 08:02:59 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char		*get_line(int fd, t_list *line_storage, int line_length);
-static char		*line_join(t_list *line_storage, int line_len);
-static int		line_complete(char *chunk, int bytes_read, int *line_length);
+void	read_line(int fd, t_list **storage);
+void	fill_line(char **line, t_list *storage);
+void	free_storage(t_list **storage);
+int		no_newline(t_list *storage, int bytes_read);
 
 char	*get_next_line(int fd)
 {
-	int				line_length;
-	static t_list	*line_storage = NULL;
+	char			*line;
+	static t_list	*storage = NULL;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	if (!line_storage)
-		line_length = 0;
-	else
-		line_length = ft_strlen(line_storage->content);
-	return (get_line(fd, line_storage, line_length));
-}
-
-// TODO: criar função para apagar toda a lista
-// TODO: criar função preparar a lista para próxima chamada
-// NOTA: se usar a struct chunk para armazenar quanto foi lido,
-// ao final só preciso iterar o último nó para saber o tamanho da linha
-// static char	*get_line(int fd, t_list *line_storage)
-static char	*get_line(int fd, t_list *line_storage, int line_length)
-{
-	char		*chunk;
-	int			bytes_read;
-
-	bytes_read = BUFFER_SIZE;
-	while (bytes_read)
-	{
-		chunk = malloc(sizeof(*chunk) * (BUFFER_SIZE + 1));
-		if (!chunk)
-			return (NULL);
-		bytes_read = read(fd, chunk, BUFFER_SIZE);
-		if (bytes_read == -1)
-			return (NULL);
-		chunk[BUFFER_SIZE] = '\0';
-		ft_lstadd_back(&line_storage, ft_lstnew(chunk));
-		if (line_complete(chunk, bytes_read, &line_length))
-			break ;
-	}
-	return (line_join(line_storage, line_length));
-}
-
-static char	*line_join(t_list *line_storage, int line_length)
-{
-	int		i;
-	char	*line;
-	char	*string;
-	t_list	*exclude;
-
-	line = malloc(sizeof(*line) * (line_length + 1));
-	if (!line)
+	line = NULL;
+	read_line(fd, &storage);
+	if (!storage)
 		return (NULL);
-	i = 0;
-	while (line_storage)
-	{
-		string = line_storage->content;
-		while (i < line_length && *string)
-			line[i++] = *(string++);
-		exclude = line_storage;
-		line_storage = line_storage->next;
-		ft_lstdelone(exclude, free);
-	}
-	line[i] = '\0';
+	fill_line(&line, storage);
+	free_storage(&storage);
 	return (line);
 }
 
-static int	line_complete(char *chunk, int bytes_read, int *line_length)
+void	read_line(int fd, t_list **storage)
 {
-	int	i;
+	t_list	*last;
+	t_chunk	*content;
+	char	*buffer;
+	int		bytes_read;
 
-	i = 0;
-	while (i < bytes_read)
+	bytes_read = BUFFER_SIZE;
+	while (no_newline(*storage, bytes_read))
 	{
-		if (chunk[i++] == '\n')
+		content = malloc(sizeof(*content));
+		buffer = malloc(sizeof(*buffer) * (BUFFER_SIZE + 1));
+		bytes_read = read(fd, buffer, BUFFER_SIZE);
+		if (!bytes_read || bytes_read == -1 || !buffer || !content)
 		{
-			*line_length += i;
-			return (1);
+			free(buffer);
+			free(content);
+			return ;
 		}
+		buffer[bytes_read] = '\0';
+		content->text = buffer;
+		last = ft_lstlast(*storage);
+		if (!last)
+			*storage = ft_lstnew(content);
+		else
+			last->next = ft_lstnew(content);
 	}
-	*line_length += bytes_read;
-	return (0);
+}
+
+void	fill_line(char **line, t_list *storage)
+{
+	int		t_index;
+	int		l_index;
+	int		length;
+	t_chunk	*content;
+
+	length = sum_chunk_size(storage);
+	if (!length)
+		return ;
+	*line = malloc(sizeof(**line) * (length + 1));
+	if (!line)
+		return ;
+	l_index = 0;
+	while (storage)
+	{
+		t_index = 0;
+		content = storage->content;
+		while (l_index < length && content->text[t_index])
+			(*line)[l_index++] = content->text[t_index++];
+		storage = storage->next;
+	}
+	(*line)[l_index] = '\0';
+}
+
+void	free_storage(t_list **storage)
+{
+	int		begin;
+	int		end;
+	t_list	*last;
+	t_chunk	*content;
+
+	last = ft_lstlast(*storage);
+	if (!last)
+		return ;
+	content = last->content;
+	last->content = NULL;
+	ft_lstclear(storage, free_chunk);
+	begin = 0;
+	end = content->size;
+	if (content->text[end])
+	{
+		while (content->text[end])
+			content->text[begin++] = content->text[end++];
+		content->text[begin] = '\0';
+		content->size = begin;
+		*storage = ft_lstnew(content);
+	}
+	else
+		free_chunk(content);
+}
+
+int	no_newline(t_list *storage, int bytes_read)
+{
+	int		newline;
+	int		index;
+	t_chunk	*content;
+
+	newline = 0;
+	if (storage)
+	{
+		content = ft_lstlast(storage)->content;
+		index = 0;
+		while (content->text[index])
+		{
+			if (content->text[index++] == '\n')
+			{
+				newline = 1;
+				break ;
+			}
+		}
+		content->size = index;
+	}
+	return (!newline && bytes_read);
 }

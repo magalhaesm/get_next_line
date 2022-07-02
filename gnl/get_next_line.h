@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:46:06 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/06/28 14:23:11 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/01 23:43:18 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,8 @@
 # include <unistd.h>
 
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 10
+#  define BUFFER_SIZE 42
 # endif
-
-typedef unsigned char	t_byte;
 
 typedef struct s_list
 {
@@ -28,11 +26,17 @@ typedef struct s_list
 	struct s_list	*next;
 }	t_list;
 
+typedef struct s_chunk
+{
+	int		size;
+	char	*text;
+}	t_chunk;
+
 char	*get_next_line(int fd);
+void	free_chunk(void *content);
+int		sum_chunk_size(t_list *storage);
 t_list	*ft_lstlast(t_list *lst);
-void	ft_lstadd_back(t_list **lst, t_list *newl);
 t_list	*ft_lstnew(void *content);
-void	ft_lstdelone(t_list *lst, void (*del)(void *));
-size_t	ft_strlen(const char *s);
+void	ft_lstclear(t_list **lst, void (*del)(void *));
 
 #endif
