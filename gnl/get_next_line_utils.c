@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:46:00 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/01 20:54:30 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/02 00:01:18 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,14 @@ void	free_chunk(void *content)
 
 int	sum_chunk_size(t_list *storage)
 {
-	t_chunk	*chunk;
+	t_chunk	*content;
 	int		length;
 
 	length = 0;
 	while (storage)
 	{
-		chunk = storage->content;
-		length += chunk->size;
+		content = storage->content;
+		length += content->size;
 		storage = storage->next;
 	}
 	return (length);
