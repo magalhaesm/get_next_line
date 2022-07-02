@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/01 23:49:33 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/02 08:06:32 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/02 18:07:22 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,14 +24,12 @@
 #  define FD_MAX 1024
 # endif
 
-typedef struct s_list
-{
+typedef struct s_list {
 	void			*content;
 	struct s_list	*next;
 }	t_list;
 
-typedef struct s_chunk
-{
+typedef struct s_chunk {
 	int		size;
 	char	*text;
 }	t_chunk;
