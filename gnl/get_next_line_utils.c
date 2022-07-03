@@ -6,68 +6,56 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:46:00 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/02 00:01:18 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/03 18:46:54 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-void	free_chunk(void *content)
+t_chunk	*last_chunk(t_chunk *storage)
 {
-	t_chunk	*aux;
-
-	if (!content)
-		return ;
-	aux = content;
-	free(aux->text);
-	free(aux);
+	if (!storage)
+		return (NULL);
+	while (storage->next)
+		storage = storage->next;
+	return (storage);
 }
 
-int	sum_chunk_size(t_list *storage)
+int	sum_chunks(t_chunk *storage)
 {
-	t_chunk	*content;
 	int		length;
 
 	length = 0;
 	while (storage)
 	{
-		content = storage->content;
-		length += content->size;
+		length += storage->size;
 		storage = storage->next;
 	}
 	return (length);
 }
 
-t_list	*ft_lstnew(void *content)
+t_chunk	*new_chunk(char *text)
 {
-	t_list	*newnode;
+	t_chunk	*new_node;
 
-	newnode = malloc(sizeof(*newnode));
-	if (!newnode)
+	new_node = malloc(sizeof(*new_node));
+	if (!new_node)
 		return (NULL);
-	newnode->content = content;
-	newnode->next = NULL;
-	return (newnode);
+	new_node->text = text;
+	new_node->next = NULL;
+	new_node->size = 0;
+	return (new_node);
 }
 
-void	ft_lstclear(t_list **lst, void (*del)(void *))
+void	free_storage(t_chunk **storage)
 {
-	t_list	*tmp;
+	t_chunk	*node;
 
-	while (*lst != NULL)
+	while (*storage != NULL)
 	{
-		tmp = *lst;
-		*lst = (*lst)->next;
-		del(tmp->content);
-		free(tmp);
+		node = *storage;
+		*storage = (*storage)->next;
+		free(node->text);
+		free(node);
 	}
-}
-
-t_list	*ft_lstlast(t_list *lst)
-{
-	if (!lst)
-		return (NULL);
-	while (lst->next)
-		lst = lst->next;
-	return (lst);
 }
