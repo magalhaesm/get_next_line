@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/07/01 23:49:33 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/02 18:07:22 by mdias-ma         ###   ########.fr       */
+/*   Created: 2022/07/03 16:34:00 by mdias-ma          #+#    #+#             */
+/*   Updated: 2022/07/03 18:38:58 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,21 +24,16 @@
 #  define FD_MAX 1024
 # endif
 
-typedef struct s_list {
-	void			*content;
-	struct s_list	*next;
-}	t_list;
-
 typedef struct s_chunk {
-	int		size;
-	char	*text;
+	int				size;
+	char			*text;
+	struct s_chunk	*next;
 }	t_chunk;
 
 char	*get_next_line(int fd);
-void	free_chunk(void *content);
-int		sum_chunk_size(t_list *storage);
-t_list	*ft_lstlast(t_list *lst);
-t_list	*ft_lstnew(void *content);
-void	ft_lstclear(t_list **lst, void (*del)(void *));
+int		sum_chunks(t_chunk *storage);
+void	free_storage(t_chunk **storage);
+t_chunk	*last_chunk(t_chunk *storage);
+t_chunk	*new_chunk(char *text);
 
 #endif

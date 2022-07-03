@@ -5,22 +5,22 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/07/01 23:49:28 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/02 08:13:47 by mdias-ma         ###   ########.fr       */
+/*   Created: 2022/07/03 16:33:48 by mdias-ma          #+#    #+#             */
+/*   Updated: 2022/07/03 17:16:18 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
 
-void	read_line(int fd, t_list **storage);
-void	fill_line(char **line, t_list *storage);
-void	free_storage(t_list **storage);
-int		no_newline(t_list *storage, int bytes_read);
+void	read_line(int fd, t_chunk **storage);
+void	fill_line(char **line, t_chunk *storage);
+void	rewind_storage(t_chunk **storage);
+int		no_newline(t_chunk *storage, int bytes_read);
 
 char	*get_next_line(int fd)
 {
 	char			*line;
-	static t_list	*storage[FD_MAX] = {NULL};
+	static t_chunk	*storage[FD_MAX] = {NULL};
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
@@ -29,111 +29,105 @@ char	*get_next_line(int fd)
 	if (!storage[fd])
 		return (NULL);
 	fill_line(&line, storage[fd]);
-	free_storage(&storage[fd]);
+	rewind_storage(&storage[fd]);
 	return (line);
 }
 
-void	read_line(int fd, t_list **storage)
+void	read_line(int fd, t_chunk **storage)
 {
-	t_list	*last;
-	t_chunk	*content;
+	t_chunk	*node;
 	char	*buffer;
 	int		bytes_read;
 
 	bytes_read = BUFFER_SIZE;
 	while (no_newline(*storage, bytes_read))
 	{
-		content = malloc(sizeof(*content));
 		buffer = malloc(sizeof(*buffer) * (BUFFER_SIZE + 1));
 		bytes_read = read(fd, buffer, BUFFER_SIZE);
-		if (!bytes_read || bytes_read == -1 || !buffer || !content)
+		if (!bytes_read || bytes_read == -1 || !buffer)
 		{
 			free(buffer);
-			free(content);
 			return ;
 		}
 		buffer[bytes_read] = '\0';
-		content->text = buffer;
-		last = ft_lstlast(*storage);
-		if (!last)
-			*storage = ft_lstnew(content);
+		node = last_chunk(*storage);
+		if (!node)
+			*storage = new_chunk(buffer);
 		else
-			last->next = ft_lstnew(content);
+			node->next = new_chunk(buffer);
 	}
 }
 
-void	fill_line(char **line, t_list *storage)
+void	fill_line(char **line, t_chunk *storage)
 {
-	int		t_index;
-	int		l_index;
+	int		tx_index;
+	int		ln_index;
 	int		length;
-	t_chunk	*content;
 
-	length = sum_chunk_size(storage);
+	length = sum_chunks(storage);
 	if (!length)
 		return ;
 	*line = malloc(sizeof(**line) * (length + 1));
 	if (!line)
 		return ;
-	l_index = 0;
+	ln_index = 0;
 	while (storage)
 	{
-		t_index = 0;
-		content = storage->content;
-		while (l_index < length && content->text[t_index])
-			(*line)[l_index++] = content->text[t_index++];
+		tx_index = 0;
+		while (ln_index < length && storage->text[tx_index])
+			(*line)[ln_index++] = storage->text[tx_index++];
 		storage = storage->next;
 	}
-	(*line)[l_index] = '\0';
+	(*line)[ln_index] = '\0';
 }
 
-void	free_storage(t_list **storage)
+void	rewind_storage(t_chunk **storage)
 {
 	int		begin;
 	int		end;
-	t_list	*last;
-	t_chunk	*content;
+	t_chunk	*last;
+	char	*text;
 
-	last = ft_lstlast(*storage);
+	last = last_chunk(*storage);
 	if (!last)
 		return ;
-	content = last->content;
-	last->content = NULL;
-	ft_lstclear(storage, free_chunk);
+	text = last->text;
+	end = last->size;
+	last->text = NULL;
+	free_storage(storage);
 	begin = 0;
-	end = content->size;
-	if (content->text[end])
+	if (text[end] != '\0')
 	{
-		while (content->text[end])
-			content->text[begin++] = content->text[end++];
-		content->text[begin] = '\0';
-		content->size = begin;
-		*storage = ft_lstnew(content);
+		while (text[end])
+			text[begin++] = text[end++];
+		text[begin] = '\0';
+		*storage = new_chunk(text);
+		(*storage)->size = begin;
 	}
 	else
-		free_chunk(content);
+		free(text);
 }
 
-int	no_newline(t_list *storage, int bytes_read)
+int	no_newline(t_chunk *storage, int bytes_read)
 {
-	int		newline;
 	int		index;
-	t_chunk	*content;
+	int		newline;
+	t_chunk	*node;
 
 	newline = 0;
-	if (storage)
+	node = last_chunk(storage);
+	if (node)
 	{
-		content = ft_lstlast(storage)->content;
 		index = 0;
-		while (content->text[index])
+		while (node->text[index])
 		{
-			if (content->text[index++] == '\n')
+			if (node->text[index++] == '\n')
 			{
 				newline = 1;
 				break ;
 			}
 		}
-		content->size = index;
+		node->size = index;
 	}
 	return (!newline && bytes_read);
 }
