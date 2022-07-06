@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/03 16:33:48 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/05 21:46:12 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/06 08:30:04 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,6 @@ char	*get_next_line(int fd)
 		return (NULL);
 	line = NULL;
 	read_line(fd, &storage[fd]);
-	if (!storage[fd])
-		return (NULL);
 	fill_line(&line, storage[fd]);
 	rewind_storage(&storage[fd]);
 	return (line);
@@ -81,20 +79,15 @@ void	rewind_storage(t_chunk **storage)
 	int		end;
 	t_chunk	*last;
 
-	if (!storage)
-		return ;
 	last = purge(storage);
 	if (!last)
 		return ;
 	begin = 0;
 	end = last->size;
-	if (last->size > 0)
-	{
-		while (last->text[end])
-			last->text[begin++] = last->text[end++];
-		last->text[begin] = '\0';
-		(*storage)->size = begin;
-	}
+	while (last->text[end])
+		last->text[begin++] = last->text[end++];
+	last->text[begin] = '\0';
+	(*storage)->size = begin;
 }
 
 t_chunk	*purge(t_chunk **storage)
