@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:42:38 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/05 01:16:06 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/05 21:37:51 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 void	read_line(int fd, t_chunk **storage);
 void	fill_line(char **line, t_chunk *storage);
 void	rewind_storage(t_chunk **storage);
-int		no_newline(t_chunk *storage, int bytes_read);
+t_chunk	*purge(t_chunk **storage);
 
 char	*get_next_line(int fd)
 {
@@ -36,25 +36,18 @@ char	*get_next_line(int fd)
 void	read_line(int fd, t_chunk **storage)
 {
 	t_chunk	*node;
-	char	*buffer;
 	int		bytes_read;
 
 	bytes_read = BUFFER_SIZE;
-	while (no_newline(*storage, bytes_read))
+	while (bytes_read)
 	{
-		buffer = malloc(sizeof(*buffer) * (BUFFER_SIZE + 1));
-		bytes_read = read(fd, buffer, BUFFER_SIZE);
-		if (!bytes_read || bytes_read == -1 || !buffer)
-		{
-			free(buffer);
+		node = writable_node(storage);
+		if (node->newline)
+			break ;
+		bytes_read = read(fd, node->text, BUFFER_SIZE);
+		if (!bytes_read || bytes_read == -1)
 			return ;
-		}
-		buffer[bytes_read] = '\0';
-		node = last_chunk(*storage);
-		if (!node)
-			*storage = new_chunk(buffer);
-		else
-			node->next = new_chunk(buffer);
+		node->text[bytes_read] = '\0';
 	}
 }
 
@@ -76,6 +69,7 @@ void	fill_line(char **line, t_chunk *storage)
 		tx_index = 0;
 		while (ln_index < length && storage->text[tx_index])
 			(*line)[ln_index++] = storage->text[tx_index++];
+		storage->newline = 0;
 		storage = storage->next;
 	}
 	(*line)[ln_index] = '\0';
@@ -86,47 +80,39 @@ void	rewind_storage(t_chunk **storage)
 	int		begin;
 	int		end;
 	t_chunk	*last;
-	char	*text;
 
-	last = last_chunk(*storage);
+	if (!storage)
+		return ;
+	last = purge(storage);
 	if (!last)
 		return ;
-	text = last->text;
-	end = last->size;
-	last->text = NULL;
-	free_storage(storage);
 	begin = 0;
-	if (text[end] != '\0')
+	end = last->size;
+	if (last->size > 0)
 	{
-		while (text[end])
-			text[begin++] = text[end++];
-		text[begin] = '\0';
-		*storage = new_chunk(text);
+		while (last->text[end])
+			last->text[begin++] = last->text[end++];
+		last->text[begin] = '\0';
 		(*storage)->size = begin;
 	}
-	else
-		free(text);
 }
 
-int	no_newline(t_chunk *storage, int bytes_read)
+t_chunk	*purge(t_chunk **storage)
 {
-	int		index;
-	int		newline;
 	t_chunk	*node;
 
-	newline = 0;
-	node = last_chunk(storage);
-	if (!node)
-		return (!newline);
-	index = 0;
-	while (node->text[index])
+	if (*storage == NULL)
+		return (NULL);
+	while ((*storage)->next)
 	{
-		if (node->text[index++] == '\n')
-		{
-			newline = 1;
-			break ;
-		}
+		node = *storage;
+		*storage = (*storage)->next;
+		free(node);
 	}
-	node->size = index;
-	return (!newline && bytes_read);
+	if ((*storage)->size == 0)
+	{
+		free(*storage);
+		*storage = NULL;
+	}
+	return (*storage);
 }

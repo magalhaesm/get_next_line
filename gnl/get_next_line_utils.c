@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:46:00 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/03 18:46:54 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/05 21:15:46 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,41 @@ t_chunk	*last_chunk(t_chunk *storage)
 	while (storage->next)
 		storage = storage->next;
 	return (storage);
+}
+
+t_chunk	*writable_node(t_chunk **storage)
+{
+	t_chunk	*node;
+
+	node = last_chunk(*storage);
+	if (newline(node))
+		return (node);
+	if (!node)
+	{
+		*storage = new_chunk();
+		return (*storage);
+	}
+	node->next = new_chunk();
+	return (node->next);
+}
+
+int	newline(t_chunk *node)
+{
+	int		index;
+
+	if (!node)
+		return (0);
+	index = 0;
+	while (node->text[index])
+	{
+		if (node->text[index++] == '\n')
+		{
+			node->newline = 1;
+			break ;
+		}
+	}
+	node->size = index;
+	return (node->newline);
 }
 
 int	sum_chunks(t_chunk *storage)
@@ -34,28 +69,15 @@ int	sum_chunks(t_chunk *storage)
 	return (length);
 }
 
-t_chunk	*new_chunk(char *text)
+t_chunk	*new_chunk(void)
 {
 	t_chunk	*new_node;
 
 	new_node = malloc(sizeof(*new_node));
 	if (!new_node)
 		return (NULL);
-	new_node->text = text;
 	new_node->next = NULL;
+	new_node->newline = 0;
 	new_node->size = 0;
 	return (new_node);
-}
-
-void	free_storage(t_chunk **storage)
-{
-	t_chunk	*node;
-
-	while (*storage != NULL)
-	{
-		node = *storage;
-		*storage = (*storage)->next;
-		free(node->text);
-		free(node);
-	}
 }
