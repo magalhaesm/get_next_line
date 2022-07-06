@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:46:00 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/05 21:15:46 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/06 10:29:40 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ t_chunk	*writable_node(t_chunk **storage)
 	t_chunk	*node;
 
 	node = last_chunk(*storage);
-	if (newline(node))
+	if (has_newline(node))
 		return (node);
 	if (!node)
 	{
@@ -37,7 +37,7 @@ t_chunk	*writable_node(t_chunk **storage)
 	return (node->next);
 }
 
-int	newline(t_chunk *node)
+int	has_newline(t_chunk *node)
 {
 	int		index;
 

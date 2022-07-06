@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:46:06 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/05 21:20:51 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/06 10:29:20 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ typedef struct s_chunk {
 }	t_chunk;
 
 char	*get_next_line(int fd);
-int		newline(t_chunk *storage);
+int		has_newline(t_chunk *storage);
 int		sum_chunks(t_chunk *storage);
 t_chunk	*new_chunk(void);
 t_chunk	*last_chunk(t_chunk *storage);
