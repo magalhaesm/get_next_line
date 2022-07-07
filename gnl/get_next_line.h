@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/24 12:46:06 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/06 10:29:20 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/07 17:59:05 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 
 # include <stdlib.h>
 # include <unistd.h>
+
+# define GNL_EOF 0
+# define GNL_ERR -1
 
 # ifndef BUFFER_SIZE
 #  define BUFFER_SIZE 1024

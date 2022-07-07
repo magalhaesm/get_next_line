@@ -6,7 +6,7 @@
 /*   By: mdias-ma <mdias-ma@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/03 16:33:48 by mdias-ma          #+#    #+#             */
-/*   Updated: 2022/07/06 08:30:04 by mdias-ma         ###   ########.fr       */
+/*   Updated: 2022/07/07 17:53:48 by mdias-ma         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ void	read_line(int fd, t_chunk **storage)
 		if (node->newline)
 			break ;
 		bytes_read = read(fd, node->text, BUFFER_SIZE);
-		if (!bytes_read || bytes_read == -1)
+		if (bytes_read == GNL_EOF || bytes_read == GNL_ERR)
 			return ;
 		node->text[bytes_read] = '\0';
 	}
